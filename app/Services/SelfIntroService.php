@@ -66,4 +66,15 @@ class SelfIntroService
     {
         return BlogSelfIntro::query()->where('id', $params['id'])->update(['password'=> $params['password']]);
     }
+
+    public function homeLook($password)
+    {
+        $intro = BlogSelfIntro::query()->first();
+
+        if ($intro->password != $password) {
+            throw new WrongRequestException("密码错误!");
+        }
+
+        return $intro;
+    }
 }

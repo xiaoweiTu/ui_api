@@ -35,6 +35,11 @@ class IntroRequest extends FormRequest
                     'password' => 'required',
                 ];
                 break;
+            case 'self_intro/homeLook':
+                $rules = [
+                    'password' => 'required',
+                ];
+                break;
         }
         return $rules;
     }
