@@ -47,8 +47,10 @@ class UploadService {
         $extension = $image->getExtension();
         $filePath  = $this->getFileName($extension);
         if (!$image->isValid()) {
-            throw new WrongRequestException('图片保存失败!');
+            throw new WrongRequestException('上传失败!');
         }
+        $key = date('Ymd').$image->getClientFilename();
+
         $image->moveTo($filePath);
         if ($image->isMoved()) {
             $upToken = $this->redis->get(self::QI_NIU_TOKEN);
@@ -57,7 +59,7 @@ class UploadService {
                 $this->redis->setex(self::QI_NIU_TOKEN, 3600, $upToken);
             }
             $uploadMgr = new UploadManager();
-            list($ret, $err) = $uploadMgr->putFile($upToken, null, $filePath);
+            list($ret, $err) = $uploadMgr->putFile($upToken, $key, $filePath);
         }
         // 异步删除本地文件
         go(function () use ($filePath){
@@ -66,13 +68,13 @@ class UploadService {
             }
         });
         if ($err !== null) {
-            throw new WrongRequestException("上传图片失败!");
+            throw new WrongRequestException("上传文件失败!");
         }
-        return config('cdn') . '/' . $ret['hash'];
+        return config('cdn') . '/' . $ret['key'];
     }
 
     public function getFileName($extension) {
-        $localPath = BASE_PATH . '/storage/images/';
+        $localPath = BASE_PATH . '/storage/files/';
         $fileName  = date('YmdHis') . round(0, 999999) . '.' . $extension;
         return $localPath . $fileName;
     }
